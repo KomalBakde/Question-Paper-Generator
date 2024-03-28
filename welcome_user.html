@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create Question Paper</title>
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background-color: #f2f2f2;
+      background-size: cover;
+      font-family: Arial, sans-serif;
+    }
+    
+    .container {
+      width: 500px;
+      margin: 0 auto;
+      padding: 40px;
+      background-color: #ffffff;
+      border-radius: 5px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+    }
+    
+    .container h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    
+    .form-group {
+      margin-bottom: 20px;
+    }
+    
+    .form-group label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+    
+    .form-group select,
+    .form-group input[type="number"] {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+    
+    .form-group input[type="submit"] {
+      background-color: #4CAF50;
+      color: #ffffff;
+      padding: 10px 15px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      width: 100%;
+    }
+    
+    .form-group input[type="submit"]:hover {
+      background-color: #45a049;
+    }
+
+    .form-group input[type="button"] {
+      background-color: #337ab7;
+      color: #ffffff;
+      padding: 10px 15px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      width: 100%;
+    }
+
+    .form-group input[type="button"]:hover {
+      background-color: #286090;
+    }
+    
+    .question {
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      padding: 10px;
+      margin-bottom: 10px;
+    }
+
+    .manual-inputs-container {
+      display: flex;
+      justify-content: space-between; 
+    }
+
+    .manual-question-container,.manual-marks-container {
+      flex: 1; 
+      margin-right: 40px; 
+    }
+
+    .manual-question-container textarea,.manual-marks-container textarea {
+      width: 100%; 
+    }
+
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Search Question</h2>
+    <form action="connect.php" method="POST">
+      <div class="form-group">
+        <label for="subject">Subject:</label>
+        <select name="subject" id="subject">
+          <option value="">Select a Subject:</option>
+          <option value="Software Engineering">Software Engineering</option>
+          <option value="Computer Graphics">Computer Graphics</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="unit">Unit:</label>
+        <select name="unit" id="unit">
+          <option value="">Select a Unit:</option>
+          <option value="1">Unit 1</option>
+          <option value="2">Unit 2</option>
+          <option value="3">Unit 3</option>
+          <option value="4">Unit 4</option>
+          <option value="5">Unit 5</option>
+          <option value="6">Unit 6</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="marks">Marks:</label>
+        <input type="number" name="marks" id="marks" placeholder="Enter marks to search" step="1">
+      </div>
+      <div class="form-group">
+        <input type="button" name="add" value="Add Question" onclick="fetchAndAddQuestion()">
+      </div>
+
+      <div class="form-group">
+        <div class="manual-inputs-container">
+          <div class="manual-question-container">
+            <label for="manualQuestion">Enter Question:</label>
+            <textarea name="manualQuestion" id="manualQuestion" rows="4" placeholder="Write your question here"></textarea>
+          </div>
+          <div class="manual-marks-container">
+            <label for="manualMarks">Enter Marks:</label>
+            <textarea name="manualMarks" id="manualMarks" rows="4" placeholder="Enter marks"></textarea>
+          </div>
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <input type="button" name="addManual" value="Add Manual Question" onclick="addManualQuestion()">
+      </div>
+
+      <div id="manual-questions-container">
+        <!-- Manual questions and marks will be dynamically added here -->
+      </div>
+      <div id="questions-container">
+        <!-- Questions will be dynamically added here -->
+      </div>
+
+      <div class="form-group">
+        <input type="submit" name="finish" value="Finish and Generate PDF">
+      </div>
+    </form>
+  </div>
+
+  <script>
+    function addManualQuestion() {
+      var manualQuestion = document.getElementById("manualQuestion").value;
+      var manualMarks = document.getElementById("manualMarks").value;
+      if (manualQuestion === "" || manualMarks === "") {
+        alert("Please fill in both the manual question and marks fields.");
+        return;
+      }
+      var container = document.createElement("div");
+      container.classList.add("question");
+      var checkbox = document.createElement("input");
+      checkbox.type = "checkbox";
+      checkbox.name = "selectedQuestions[]";
+      checkbox.value = manualQuestion + "|" + manualMarks;
+      var label = document.createElement("label");
+      label.appendChild(checkbox);
+      label.appendChild(document.createTextNode(manualQuestion));
+      container.appendChild(label);
+      var manualQuestionsContainer = document.getElementById("manual-questions-container");
+      manualQuestionsContainer.appendChild(container);
+      document.getElementById("manualQuestion").value = "";
+      document.getElementById("manualMarks").value = "";
+    }
+   
+    function fetchAndAddQuestion() {
+      var subject = document.getElementById("subject").value;
+      var unit = document.getElementById("unit").value;
+      var marks = document.getElementById("marks").value;
+      if (subject === "" || unit === "" || marks === "") {
+        alert("Please fill in all fields before adding a question.");
+        return;
+      }
+      var xhr = new XMLHttpRequest();
+      var url = "connect.php?subject=" + encodeURIComponent(subject) + "&unit=" + encodeURIComponent(unit) + "&marks=" + encodeURIComponent(marks);
+      xhr.open("GET", url, true);
+      xhr.onreadystatechange = function() {
+        if (xhr.readyState === 4 && xhr.status === 200) {
+          var question = xhr.responseText;
+          var container = document.createElement("div");
+          container.classList.add("question");
+          var checkbox = document.createElement("input");
+          checkbox.type = "checkbox";
+          checkbox.name = "selectedQuestions[]";
+          checkbox.value = question;
+          var label = document.createElement("label");
+          label.appendChild(checkbox);
+          label.appendChild(document.createTextNode(question));
+          container.appendChild(label);
+          var questionsContainer = document.getElementById("questions-container");
+          questionsContainer.appendChild(container);
+        }
+      };
+      xhr.send();
+    }
+  </script>
+</body>
+</html>
